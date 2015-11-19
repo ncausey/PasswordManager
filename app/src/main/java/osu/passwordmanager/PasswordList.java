@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PasswordList extends ListActivity {
+public class PasswordList extends AppCompatActivity {
 
     List<Map<String, String>> passList = new ArrayList<Map<String, String>>();
 

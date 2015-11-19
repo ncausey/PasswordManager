@@ -45,15 +45,15 @@ public class PasswordList extends ListActivity {
 
         // Now create a new list adapter bound to the cursor.
         // SimpleListAdapter is designed for binding to a Cursor.
-        ListAdapter adapter = new SimpleAdapter(this, passList, android.R.layout.simple_list_item_2, new String[] {"password"}, new int[] {android.R.id.text1});
+        ListAdapter adapter = new SimpleAdapter(this, passList, android.R.layout.simple_list_item_1, new String[] {"password"}, new int[] {android.R.id.text1});
 
         // Bind to our new adapter.
         lv.setAdapter(adapter);
     }
 
     private void initList() {
-        passList.add(createPasswordMap("Google", "test"));
-        passList.add(createPasswordMap("Facebook", "test2"));
+        passList.add(createPasswordMap("password", "test"));
+        passList.add(createPasswordMap("password", "test2"));
     }
     private HashMap<String, String> createPasswordMap(String key, String value) {
         HashMap<String, String> passMap = new HashMap<String, String>();

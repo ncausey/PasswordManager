@@ -1,5 +1,6 @@
 package osu.passwordmanager;
 
+import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
@@ -12,10 +13,17 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Pair;
+import android.view.ContextMenu;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -29,7 +37,8 @@ import java.util.Map;
 
 public class PasswordList extends AppCompatActivity {
 
-    List<Map<String, String>> passList = new ArrayList<Map<String, String>>();
+    List<Pair<String, String>> passList = new ArrayList<Pair<String, String>>();
+    ListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -45,19 +54,68 @@ public class PasswordList extends AppCompatActivity {
 
         // Now create a new list adapter bound to the cursor.
         // SimpleListAdapter is designed for binding to a Cursor.
-        ListAdapter adapter = new SimpleAdapter(this, passList, android.R.layout.simple_list_item_1, new String[] {"password"}, new int[] {android.R.id.text1});
+        adapter = new ArrayAdapter<Pair<String, String>>(this, android.R.layout.simple_list_item_1, android.R.id.text1, passList);
 
         // Bind to our new adapter.
         lv.setAdapter(adapter);
+
+        // we register for the contextmneu
+        registerForContextMenu(lv);
     }
 
     private void initList() {
-        passList.add(createPasswordMap("password", "test"));
-        passList.add(createPasswordMap("password", "test2"));
+        passList.add(createPasswordPair("Google", "test"));
+        passList.add(createPasswordPair("Facebook", "test2"));
     }
-    private HashMap<String, String> createPasswordMap(String key, String value) {
-        HashMap<String, String> passMap = new HashMap<String, String>();
-        passMap.put(key, value);
+    private Pair<String, String> createPasswordPair(String key, String value) {
+        Pair<String, String> passMap = new Pair<String, String>(key, value);
         return passMap;
     }
+
+    public void addPassword(View view) {
+        final Dialog d = new Dialog(this);
+        d.setContentView(R.layout.add_password_dialog);
+        d.setTitle("Add password");
+        d.setCancelable(true);
+        final EditText editAccount = (EditText) d.findViewById(R.id.editTextAccount);
+        final EditText editPassword = (EditText) d.findViewById(R.id.editTextPassword);
+        Button b = (Button) d.findViewById(R.id.addBtn);
+        b.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String accountName = editAccount.getText().toString();
+                String password = editPassword.getText().toString();
+                PasswordList.this.passList.add(createPasswordPair(accountName, password));
+
+                // We notify the data model is changed
+                PasswordList.this.adapter.notify();
+                d.dismiss();
+            }
+        });
+        d.show();
+    }
+
+    // We want to create a context Menu when the user long click on an item
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+
+        super.onCreateContextMenu(menu, v, menuInfo);
+        AdapterView.AdapterContextMenuInfo aInfo = (AdapterView.AdapterContextMenuInfo) menuInfo;
+
+        // We know that each row in the adapter is a Map
+        Pair<String, String> account =  (Pair<String, String>) adapter.getItem(aInfo.position);
+
+        menu.setHeaderTitle("Options for " + account.first);
+        menu.add(1, 1, 1, "Delete");
+
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        AdapterView.AdapterContextMenuInfo aInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        passList.remove(aInfo.position);
+        adapter.notify();
+        return true;
+    }
+
 }

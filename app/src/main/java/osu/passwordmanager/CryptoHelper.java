@@ -13,14 +13,14 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * A wrapper class that handles encryption/decryption of data along with hashing. Encryption uses
+ * A helper class that handles encryption/decryption of data along with hashing. Encryption uses
  * AES-128 and hashing uses PBKDF2
  * Created by Jacob on 11/21/2015.
  */
-public class EncryptionHelper {
+public class CryptoHelper {
 
     //AES-128 encryption using a randomly generated IV
-    public String encrypt(String key, String data){
+    public static String encrypt(String key, String data){
         try {
             String initVector = generateSalt(16);
             IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
@@ -35,7 +35,7 @@ public class EncryptionHelper {
         return "";
     }
 
-    public String decrypt(String key, String data){
+    public static String decrypt(String key, String data){
         try{
             //Data is in format initVector:Data
             String[] dataParts = data.split(":");
@@ -52,7 +52,7 @@ public class EncryptionHelper {
         return "";
     }
 
-    public String getHash(String data) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static String getHash(String data) throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] salt = generateSalt(16).getBytes();
         int iterations = 1234;
 
@@ -63,7 +63,7 @@ public class EncryptionHelper {
         return Base64.encodeToString(hash, Base64.DEFAULT);
     }
 
-    private String generateSalt(int blockSize)throws NoSuchAlgorithmException {
+    private static String generateSalt(int blockSize) throws NoSuchAlgorithmException {
         SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
         byte[] salt = new byte[blockSize];
         sr.nextBytes(salt);

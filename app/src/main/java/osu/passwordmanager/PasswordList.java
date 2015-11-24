@@ -61,7 +61,7 @@ public class PasswordList extends AppCompatActivity {
 
 
 
-        // we register for the contextmneu
+        // we register for the contextmenu
         registerForContextMenu(lv);
 
         // React to user clicks on item

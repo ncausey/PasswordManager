@@ -52,16 +52,4 @@ public class PasswordListAdapter extends BaseAdapter {
 
         return view;
     }
-
-    private List<Pair<String, String>> initList() {
-        List<Pair<String, String>> list = new ArrayList<>();
-        list.add(createPasswordPair("Google", "test"));
-        list.add(createPasswordPair("Facebook", "test2"));
-        return list;
-    }
-
-    private Pair<String, String> createPasswordPair(String key, String value) {
-        Pair<String, String> passPair = new Pair<String, String>(key, value);
-        return passPair;
-    }
 }

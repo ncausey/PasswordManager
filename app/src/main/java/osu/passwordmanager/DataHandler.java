@@ -2,6 +2,7 @@ package osu.passwordmanager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Pair;
 
 import com.google.gson.Gson;
 
@@ -30,6 +31,10 @@ public class DataHandler {
         this.masterKey = key;
     }
 
+    /**
+     * Removes the password from the password manager list if it exists.
+     * @param key the associated key with the password
+     */
     public void deleteManagedPassword(String key){
         String json = sP.getString(USER_KEYS, null);
         Gson gson = new Gson();
@@ -37,6 +42,9 @@ public class DataHandler {
         //Remove password from password list, along with any data associated with it
         if (userKeys.contains(key)){
             userKeys.remove(key);
+            String newJson = gson.toJson(userKeys);
+            sP.edit().remove(USER_KEYS);
+            sP.edit().putString(USER_KEYS, newJson);
             if (sP.contains(key)){
                 sP.edit().remove(key);
             }
@@ -44,13 +52,40 @@ public class DataHandler {
         }
     }
 
-    private String getUserPassword(){
+    /**
+     * Returns all saved managed passwords in key value pairs.
+     * @return Arraylist of key value pair of passwords
+     */
+    public List<Pair<String, String>> getAllManagedPasswords(){
+        List<Pair<String, String>> passwords = new ArrayList<Pair<String, String>>();
+        String json = sP.getString(USER_KEYS, null);
+        Gson gson = new Gson();
+        List<String> userKeys = gson.fromJson(json, ArrayList.class);
+        for (String userKey : userKeys){
+            String value = CryptoHelper.decrypt(this.masterKey, sP.getString(userKey, null));
+            passwords.add(new Pair<String, String>(userKey, value));
+        }
+        return passwords;
+    }
+
+    /**
+     * Retrieves the hash of the user's master password
+     * @return hash of master password
+     */
+    public String getUserPassword(){
         if (sP.contains(USER_PW)){
             return sP.getString(USER_PW, null);
         }
         return "";
     }
 
+    /**
+     * Sets up the initial user password for the app
+     * @param pw the password to set
+     * @return true if successful. If there already exists a password,
+     * nothing is changed and false is returned
+     * @throws Exception
+     */
     public boolean setInitialUserPassword(String pw) throws Exception {
         if (pw.length() <= MIN_PASSWORD_LENGTH) return false;
         if (!sP.contains(USER_PW)){
@@ -63,6 +98,15 @@ public class DataHandler {
         return false;
     }
 
+    /**
+     * Saves the password and associated data to the list of managed passwords.
+     * @param key the "name" of the password (i.e if we want to store password
+     *            for Facebook, Google, etc.)
+     * @param data the password itself we want to store
+     * @return true if operation is successful, false otherwise. Password must meet
+     * minimum length requirements.
+     * @throws Exception
+     */
     public boolean saveManagedPassword(String key, String data) throws Exception{
         if (key.equals(USER_PW)) return false;
         //In order to be able to retrieve data given either a voice or text password we must save
@@ -88,11 +132,34 @@ public class DataHandler {
         return true;
     }
 
-    public boolean setUserPassword(String newPw, String oldPw, String medium) throws Exception {
+    /**
+     * Sets a new password for the user, re-encrypting all data with the new password
+     * @param newPw new password to change to
+     * @param oldPw old password used to verify authentication and decrypt data
+     * @return true if operation successful, false otherwise. Password must meet minimum
+     * password requirements.
+     * @throws Exception
+     */
+    public boolean setUserPassword(String newPw, String oldPw) throws Exception {
         if (newPw.length() < MIN_PASSWORD_LENGTH) return false;
         String oldPwHash = CryptoHelper.getHash(oldPw);
         if (getUserPassword().equals(oldPwHash)){
             String newHash = CryptoHelper.getHash(newPw);
+            //Update the new password
+            sP.edit().remove(USER_PW);
+            sP.edit().putString(USER_PW, newHash);
+
+            //Re-encrypt all the data with the new password
+            String json = sP.getString(USER_KEYS, null);
+            Gson gson = new Gson();
+            List<String> userKeys = gson.fromJson(json, ArrayList.class);
+            for (String userKey : userKeys){
+                if (sP.contains(userKey)){
+                    String data = CryptoHelper.decrypt(oldPw, sP.getString(userKey, null));
+                    sP.edit().remove(userKey);
+                    sP.edit().putString(userKey, CryptoHelper.encrypt(newPw, data));
+                }
+            }
 
             sP.edit().apply();
             return true;

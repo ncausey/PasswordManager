@@ -17,36 +17,61 @@ import java.util.List;
  */
 public class DataHandler {
     final String USER_KEYS = "USER_KEYS";
-    final String USER_TEXT_PW = "USER_TEXT_PW";
-    final String USER_VOICE_PW = "USER_VOICE_PW";
+    final String USER_PW = "USER_PW";
     final String USER_FACE_PROPERTIES = "USER_FACE_PROPERTIES";
-    final String TEXT_EXT = "_TEXT";
-    final String VOICE_EXT = "_VOICE";
+    final int MIN_PASSWORD_LENGTH = 6;
 
     SharedPreferences sP;
-    String textKey;
-    String voiceKey;
+    String masterKey;
 
 
-    public DataHandler(SharedPreferences sP, String tKey, String vKey){
+    public DataHandler(SharedPreferences sP, String key){
         this.sP = sP;
-        this.textKey = tKey;
-        this.voiceKey = vKey;
+        this.masterKey = key;
     }
 
-    public void savePassword(String key, String data) throws Exception{
+    public void deleteManagedPassword(String key){
+        String json = sP.getString(USER_KEYS, null);
+        Gson gson = new Gson();
+        List<String> userKeys = gson.fromJson(json, ArrayList.class);
+        //Remove password from password list, along with any data associated with it
+        if (userKeys.contains(key)){
+            userKeys.remove(key);
+            if (sP.contains(key)){
+                sP.edit().remove(key);
+            }
+            sP.edit().apply();
+        }
+    }
+
+    private String getUserPassword(){
+        if (sP.contains(USER_PW)){
+            return sP.getString(USER_PW, null);
+        }
+        return "";
+    }
+
+    public boolean setInitialUserPassword(String pw) throws Exception {
+        if (pw.length() <= MIN_PASSWORD_LENGTH) return false;
+        if (!sP.contains(USER_PW)){
+            String hash = CryptoHelper.getHash(pw);
+            sP.edit().putString(USER_PW, hash);
+            sP.edit().apply();
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean saveManagedPassword(String key, String data) throws Exception{
+        if (key.equals(USER_PW)) return false;
         //In order to be able to retrieve data given either a voice or text password we must save
         //the data twice, once for each key
-        String encryptedDataText = CryptoHelper.encrypt(this.textKey, data);
-        String encryptedDataVoice = CryptoHelper.encrypt(this.voiceKey, data);
-        if (sP.contains(key + TEXT_EXT)){
-            sP.edit().remove(key + TEXT_EXT);
+        String encryptedData = CryptoHelper.encrypt(this.masterKey, data);
+        if (sP.contains(key)){
+            sP.edit().remove(key);
         }
-        if (sP.contains(key + VOICE_EXT)){
-            sP.edit().remove(key + VOICE_EXT);
-        }
-        sP.edit().putString(key + TEXT_EXT, encryptedDataText);
-        sP.edit().putString(key + VOICE_EXT, encryptedDataVoice);
+        sP.edit().putString(key, encryptedData);
 
         //Update the list of saved passwords
         String json = sP.getString(USER_KEYS, null);
@@ -55,27 +80,25 @@ public class DataHandler {
         if (!userKeys.contains(key)){
             userKeys.add(key);
             String newJson = gson.toJson(userKeys);
+            sP.edit().remove(USER_KEYS);
             sP.edit().putString(USER_KEYS, newJson);
         }
 
         sP.edit().apply();
+        return true;
     }
 
-    public void deletePassword(String key){
-        String json = sP.getString(USER_KEYS, null);
-        Gson gson = new Gson();
-        List<String> userKeys = gson.fromJson(json, ArrayList.class);
-        //Remove password from password list, along with any data associated with it
-        if (userKeys.contains(key)){
-            userKeys.remove(key);
-            if (sP.contains(key + TEXT_EXT)){
-                sP.edit().remove(key + TEXT_EXT);
-            }
-            if (sP.contains(key + VOICE_EXT)){
-                sP.edit().remove(key + VOICE_EXT);
-            }
+    public boolean setUserPassword(String newPw, String oldPw, String medium) throws Exception {
+        if (newPw.length() < MIN_PASSWORD_LENGTH) return false;
+        String oldPwHash = CryptoHelper.getHash(oldPw);
+        if (getUserPassword().equals(oldPwHash)){
+            String newHash = CryptoHelper.getHash(newPw);
+
             sP.edit().apply();
+            return true;
         }
+
+        return false;
     }
 
 }

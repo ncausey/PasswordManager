@@ -3,10 +3,10 @@ DataHandler needs to be used both for logging in and for managing passwords. To 
 2parameters. The first parameter is an instance of a SharedPreference, while the second parameter is the password used to 
 login. Example:
 
-''' 
+```
 SharedPreferences prefs = getSharedPreferences("Prefs", Context.MODE_PRIVATE); 
 DataHandler dH = new DataHandler(prefs, password);
-'''
+```
 
 ## Setting up the initial password
 Simply call setInitialUserPassword() with the password as a parameter.

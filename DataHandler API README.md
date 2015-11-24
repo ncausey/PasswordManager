@@ -1,6 +1,6 @@
 # Creating an instance
-DataHandler needs to be used both for logging in and for managing passwords. To create an instance, call the constructor with 
-2parameters. The first parameter is an instance of a SharedPreference, while the second parameter is the password used to 
+DataHandler needs to be used both for logging in and for managing passwords. To create an instance, call the constructor with
+2 parameters. The first parameter is an instance of a SharedPreference, while the second parameter is the password used to 
 login. Example:
 
 ```

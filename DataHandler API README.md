@@ -14,9 +14,9 @@ Simply call setInitialUserPassword() with the password as a parameter.
 ## Logging in
 To get the hash of the user's password, do the following:
 
-'''
+```
 String pwHash = CryptoHelper.hash(password);
-'''
+```
 
 When logging in we obviously want to compare the hash of the input password to the hash stored. To get the hash of the stored
 password, simply call getUserPassword() from your DataHandler object.

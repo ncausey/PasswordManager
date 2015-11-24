@@ -29,6 +29,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +40,7 @@ import java.util.Map;
 public class PasswordList extends AppCompatActivity {
 
     List<Pair<String, String>> passList = new ArrayList<Pair<String, String>>();
-    ListAdapter adapter;
+    PasswordListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -53,14 +55,30 @@ public class PasswordList extends AppCompatActivity {
         ListView lv = (ListView) findViewById(R.id.passwordList);
 
         // Now create a new list adapter bound to the cursor.
-        // SimpleListAdapter is designed for binding to a Cursor.
-        adapter = new ArrayAdapter<Pair<String, String>>(this, android.R.layout.simple_list_item_1, android.R.id.text1, passList);
-
+        adapter = new PasswordListAdapter(passList);
         // Bind to our new adapter.
         lv.setAdapter(adapter);
 
+
+
         // we register for the contextmneu
         registerForContextMenu(lv);
+
+        // React to user clicks on item
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            public void onItemClick(AdapterView<?> parentAdapter, View view, int position,
+                                    long id) {
+
+
+                // We know the View is a TextView so we can cast it
+                TextView clickedView = (TextView) view;
+
+                Toast.makeText(PasswordList.this, "Item with id [" + id + "] - Position [" + position + "] - Planet [" + clickedView.getText() + "]", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
     }
 
     private void initList() {
@@ -79,7 +97,7 @@ public class PasswordList extends AppCompatActivity {
         d.setCancelable(true);
         final EditText editAccount = (EditText) d.findViewById(R.id.editTextAccount);
         final EditText editPassword = (EditText) d.findViewById(R.id.editTextPassword);
-        Button b = (Button) d.findViewById(R.id.addBtn);
+        Button b = (Button) d.findViewById(R.id.add_password_from_dialog);
         b.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String accountName = editAccount.getText().toString();
@@ -87,7 +105,7 @@ public class PasswordList extends AppCompatActivity {
                 PasswordList.this.passList.add(createPasswordPair(accountName, password));
 
                 // We notify the data model is changed
-                PasswordList.this.adapter.notify();
+                PasswordList.this.adapter.notifyDataSetChanged();
                 d.dismiss();
             }
         });
@@ -114,7 +132,7 @@ public class PasswordList extends AppCompatActivity {
         int itemId = item.getItemId();
         AdapterView.AdapterContextMenuInfo aInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         passList.remove(aInfo.position);
-        adapter.notify();
+        adapter.notifyDataSetChanged();
         return true;
     }
 

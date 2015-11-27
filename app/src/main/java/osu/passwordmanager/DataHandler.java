@@ -123,6 +123,7 @@ public class DataHandler {
         String json = sP.getString(USER_KEYS, null);
         Gson gson = new Gson();
         List<String> userKeys = gson.fromJson(json, ArrayList.class);
+        if (userKeys == null) userKeys = new ArrayList<String>();
         if (!userKeys.contains(key)){
             userKeys.add(key);
             String newJson = gson.toJson(userKeys);

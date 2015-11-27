@@ -3,8 +3,10 @@ package osu.passwordmanager;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.Contacts;
@@ -39,18 +41,22 @@ import java.util.Map;
 
 public class PasswordList extends AppCompatActivity {
 
-    List<Pair<String, String>> passList = new ArrayList<Pair<String, String>>();
+    SharedPreferences prefs;
+    DataHandler dH;
+    List<Pair<String, String>> passList;
     PasswordListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
+        prefs = getSharedPreferences("Prefs", this.getApplicationContext().MODE_PRIVATE);
+        dH = new DataHandler(prefs, LoginActivity.userPassword);
+        passList = dH.getAllManagedPasswords();
+
         // We'll define a custom screen layout here (the one shown above), but
         // typically, you could just use the standard ListActivity layout.
         setContentView(R.layout.activity_password_list);
-
-        initList();
 
         ListView lv = (ListView) findViewById(R.id.passwordList);
 
@@ -102,7 +108,12 @@ public class PasswordList extends AppCompatActivity {
             public void onClick(View v) {
                 String accountName = editAccount.getText().toString();
                 String password = editPassword.getText().toString();
-                PasswordList.this.passList.add(createPasswordPair(accountName, password));
+                try {
+                    dH.saveManagedPassword(accountName, password);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                PasswordList.this.passList = dH.getAllManagedPasswords();
 
                 // We notify the data model is changed
                 PasswordList.this.adapter.notifyDataSetChanged();
@@ -131,7 +142,9 @@ public class PasswordList extends AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         AdapterView.AdapterContextMenuInfo aInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        passList.remove(aInfo.position);
+        String password = passList.remove(aInfo.position).second;
+        dH.deleteManagedPassword(password);
+        passList = dH.getAllManagedPasswords();
         adapter.notifyDataSetChanged();
         return true;
     }

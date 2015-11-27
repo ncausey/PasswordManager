@@ -61,9 +61,11 @@ public class DataHandler {
         String json = sP.getString(USER_KEYS, null);
         Gson gson = new Gson();
         List<String> userKeys = gson.fromJson(json, ArrayList.class);
-        for (String userKey : userKeys){
-            String value = CryptoHelper.decrypt(this.masterKey, sP.getString(userKey, null));
-            passwords.add(new Pair<String, String>(userKey, value));
+        if (userKeys != null && userKeys.size() > 0) {
+            for (String userKey : userKeys){
+                String value = CryptoHelper.decrypt(this.masterKey, sP.getString(userKey, null));
+                passwords.add(new Pair<String, String>(userKey, value));
+            }
         }
         return passwords;
     }

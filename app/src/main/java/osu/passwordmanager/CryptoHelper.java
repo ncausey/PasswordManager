@@ -26,7 +26,7 @@ public class CryptoHelper {
             //Convert key to MD5 hash since MD5 is 128-bit
             MessageDigest digest = MessageDigest.getInstance("MD5");
             digest.reset();
-            digest.update(Base64.decode(key, Base64.DEFAULT));
+            digest.update(Base64.decode(key, Base64.NO_WRAP));
 
             //Generate 128-bit initialization vector
             byte[] initVector = generateSalt(16);
@@ -39,8 +39,8 @@ public class CryptoHelper {
 
             //Encrypt data with key and vector
             byte[] encryptedData = cipher.doFinal(data.getBytes("UTF-8"));
-            String encodedVector = Base64.encodeToString(initVector, Base64.DEFAULT);
-            return encodedVector + ":" + Base64.encodeToString(encryptedData, Base64.DEFAULT);
+            String encodedVector = Base64.encodeToString(initVector, Base64.NO_WRAP);
+            return encodedVector + ":" + Base64.encodeToString(encryptedData, Base64.NO_WRAP);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,10 +55,10 @@ public class CryptoHelper {
             //Convert key to MD5 hash since MD5 is 128-bit
             MessageDigest digest = MessageDigest.getInstance("MD5");
             digest.reset();
-            digest.update(Base64.decode(key, Base64.DEFAULT));
+            digest.update(Base64.decode(key, Base64.NO_WRAP));
 
             //Decode the vector
-            byte[] decodedVector = Base64.decode(dataParts[0], Base64.DEFAULT);
+            byte[] decodedVector = Base64.decode(dataParts[0], Base64.NO_WRAP);
 
             //Set up cipher
             IvParameterSpec iv = new IvParameterSpec(decodedVector);
@@ -67,7 +67,7 @@ public class CryptoHelper {
             cipher.init(Cipher.DECRYPT_MODE, sks, iv);
 
             //Decrypt data
-            byte[] decrypted = cipher.doFinal(Base64.decode(dataParts[1], Base64.DEFAULT));
+            byte[] decrypted = cipher.doFinal(Base64.decode(dataParts[1], Base64.NO_WRAP));
             return new String(decrypted, "UTF-8");
         } catch (Exception e){
             e.printStackTrace();

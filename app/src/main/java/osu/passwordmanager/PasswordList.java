@@ -9,6 +9,7 @@ import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Contacts;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
@@ -50,7 +51,7 @@ public class PasswordList extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
-        prefs = getSharedPreferences("Prefs", this.getApplicationContext().MODE_PRIVATE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         dH = new DataHandler(prefs, LoginActivity.userPassword);
         passList = dH.getAllManagedPasswords();
 

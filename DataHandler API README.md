@@ -4,7 +4,7 @@ DataHandler needs to be used both for logging in and for managing passwords. To 
 login. Example:
 
 ```
-SharedPreferences prefs = getSharedPreferences("Prefs", Context.MODE_PRIVATE); 
+SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this); 
 DataHandler dH = new DataHandler(prefs, password);
 ```
 

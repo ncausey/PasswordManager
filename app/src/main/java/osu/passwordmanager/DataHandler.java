@@ -39,16 +39,17 @@ public class DataHandler {
         String json = sP.getString(USER_KEYS, null);
         Gson gson = new Gson();
         List<String> userKeys = gson.fromJson(json, ArrayList.class);
+        SharedPreferences.Editor editor = sP.edit();
         //Remove password from password list, along with any data associated with it
         if (userKeys.contains(key)){
             userKeys.remove(key);
             String newJson = gson.toJson(userKeys);
-            sP.edit().remove(USER_KEYS);
-            sP.edit().putString(USER_KEYS, newJson);
+            editor.remove(USER_KEYS);
+            editor.putString(USER_KEYS, newJson);
             if (sP.contains(key)){
-                sP.edit().remove(key);
+                editor.remove(key);
             }
-            sP.edit().apply();
+            editor.apply();
         }
     }
 
@@ -60,7 +61,13 @@ public class DataHandler {
         List<Pair<String, String>> passwords = new ArrayList<Pair<String, String>>();
         String json = sP.getString(USER_KEYS, null);
         Gson gson = new Gson();
-        List<String> userKeys = gson.fromJson(json, ArrayList.class);
+        List<String> userKeys;
+        if (json != null){
+            userKeys = gson.fromJson(json, ArrayList.class);
+        } else {
+            userKeys = new ArrayList<>();
+        }
+
         if (userKeys != null && userKeys.size() > 0) {
             for (String userKey : userKeys){
                 String value = CryptoHelper.decrypt(this.masterKey, sP.getString(userKey, null));
@@ -91,9 +98,10 @@ public class DataHandler {
     public boolean setInitialUserPassword(String pw) throws Exception {
         if (pw.length() <= MIN_PASSWORD_LENGTH) return false;
         if (!sP.contains(USER_PW)){
+            SharedPreferences.Editor editor = sP.edit();
             String hash = CryptoHelper.getHash(pw);
-            sP.edit().putString(USER_PW, hash);
-            sP.edit().apply();
+            editor.putString(USER_PW, hash);
+            editor.apply();
             return true;
         }
 
@@ -113,11 +121,12 @@ public class DataHandler {
         if (key.equals(USER_PW)) return false;
         //In order to be able to retrieve data given either a voice or text password we must save
         //the data twice, once for each key
+        SharedPreferences.Editor editor = sP.edit();
         String encryptedData = CryptoHelper.encrypt(this.masterKey, data);
         if (sP.contains(key)){
-            sP.edit().remove(key);
+            editor.remove(key);
         }
-        sP.edit().putString(key, encryptedData);
+        editor.putString(key, encryptedData);
 
         //Update the list of saved passwords
         String json = sP.getString(USER_KEYS, null);
@@ -127,11 +136,11 @@ public class DataHandler {
         if (!userKeys.contains(key)){
             userKeys.add(key);
             String newJson = gson.toJson(userKeys);
-            sP.edit().remove(USER_KEYS);
-            sP.edit().putString(USER_KEYS, newJson);
+            editor.remove(USER_KEYS);
+            editor.putString(USER_KEYS, newJson);
         }
 
-        sP.edit().apply();
+        editor.apply();
         return true;
     }
 
@@ -145,12 +154,13 @@ public class DataHandler {
      */
     public boolean setUserPassword(String newPw, String oldPw) throws Exception {
         if (newPw.length() < MIN_PASSWORD_LENGTH) return false;
+        SharedPreferences.Editor editor = sP.edit();
         String oldPwHash = CryptoHelper.getHash(oldPw);
         if (getUserPassword().equals(oldPwHash)){
             String newHash = CryptoHelper.getHash(newPw);
             //Update the new password
-            sP.edit().remove(USER_PW);
-            sP.edit().putString(USER_PW, newHash);
+            editor.remove(USER_PW);
+            editor.putString(USER_PW, newHash);
 
             //Re-encrypt all the data with the new password
             String json = sP.getString(USER_KEYS, null);
@@ -159,12 +169,12 @@ public class DataHandler {
             for (String userKey : userKeys){
                 if (sP.contains(userKey)){
                     String data = CryptoHelper.decrypt(oldPw, sP.getString(userKey, null));
-                    sP.edit().remove(userKey);
-                    sP.edit().putString(userKey, CryptoHelper.encrypt(newPw, data));
+                    editor.remove(userKey);
+                    editor.putString(userKey, CryptoHelper.encrypt(newPw, data));
                 }
             }
 
-            sP.edit().apply();
+            editor.apply();
             return true;
         }
 

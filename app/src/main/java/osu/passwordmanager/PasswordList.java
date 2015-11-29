@@ -71,6 +71,7 @@ public class PasswordList extends AppCompatActivity {
         // we register for the contextmenu
         registerForContextMenu(lv);
 
+        /*
         // React to user clicks on item
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -85,6 +86,7 @@ public class PasswordList extends AppCompatActivity {
 
             }
         });
+        */
 
     }
 
@@ -114,10 +116,10 @@ public class PasswordList extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                PasswordList.this.passList = dH.getAllManagedPasswords();
+                passList.add(createPasswordPair(accountName, password));
 
                 // We notify the data model is changed
-                PasswordList.this.adapter.notifyDataSetChanged();
+                adapter.notifyDataSetChanged();
                 d.dismiss();
             }
         });
@@ -145,7 +147,6 @@ public class PasswordList extends AppCompatActivity {
         AdapterView.AdapterContextMenuInfo aInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         String password = passList.remove(aInfo.position).second;
         dH.deleteManagedPassword(password);
-        passList = dH.getAllManagedPasswords();
         adapter.notifyDataSetChanged();
         return true;
     }

@@ -61,6 +61,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private UserLoginTask mAuthTask = null;
 
+    // The users password to be passed to the password list activity
+    public static String userPassword;
+
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -190,6 +193,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+            userPassword = password;
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
         }

@@ -5,6 +5,7 @@ import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -65,6 +66,16 @@ public class PasswordList extends AppCompatActivity {
         adapter = new PasswordListAdapter(passList);
         // Bind to our new adapter.
         lv.setAdapter(adapter);
+
+        Button SettingsButton = (Button) findViewById(R.id.settingsBtn);
+        SettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Context context = getApplicationContext();
+                Intent intent = new Intent(context, UserSettings.class);
+                startActivity(intent);
+            }
+        });
 
 
 

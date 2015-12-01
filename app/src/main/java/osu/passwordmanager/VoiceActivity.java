@@ -25,19 +25,12 @@ import android.widget.Toast;
 public class VoiceActivity extends Activity implements OnClickListener {
 
     private static final int VOICE_RECOGNITION_REQUEST_CODE = 1001;
-
-    private EditText metTextHint;
-    private ListView mlvTextMatches;
-    private Spinner msTextMatches;
     private Button mbtSpeak;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_voice);
-        metTextHint = (EditText) findViewById(R.id.etTextHint);
-        mlvTextMatches = (ListView) findViewById(R.id.lvTextMatches);
-        msTextMatches = (Spinner) findViewById(R.id.sNoOfMatches);
         mbtSpeak = (Button) findViewById(R.id.btSpeak);
         checkVoiceRecognition();
     }
@@ -68,8 +61,7 @@ public class VoiceActivity extends Activity implements OnClickListener {
                 .getPackage().getName());
 
         // Display an hint to the user about what he should say.
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, metTextHint.getText()
-                .toString());
+        //intent.putExtra(RecognizerIntent.EXTRA_PROMPT, metTextHint.getText().toString());
 
         // Given an hint to the recognizer about what the user is going to say
         //There are two form of language model available
@@ -77,19 +69,19 @@ public class VoiceActivity extends Activity implements OnClickListener {
         //2.LANGUAGE_MODEL_FREE_FORM  : If not sure about the words or phrases and its domain.
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
-
-        // If number of Matches is not selected then return show toast message
-        if (msTextMatches.getSelectedItemPosition() == AdapterView.INVALID_POSITION) {
-            Toast.makeText(this, "Please select No. of Matches from spinner",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        int noOfMatches = Integer.parseInt(msTextMatches.getSelectedItem()
-                .toString());
-        // Specify how many results you want to receive. The results will be
-        // sorted where the first result is the one with higher confidence.
-        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, noOfMatches);
+//
+//        // If number of Matches is not selected then return show toast message
+//        if (msTextMatches.getSelectedItemPosition() == AdapterView.INVALID_POSITION) {
+//            Toast.makeText(this, "Please select No. of Matches from spinner",
+//                    Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        int noOfMatches = Integer.parseInt(msTextMatches.getSelectedItem()
+//                .toString());
+//        // Specify how many results you want to receive. The results will be
+//        // sorted where the first result is the one with higher confidence.
+//        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, noOfMatches);
         //Start the Voice recognizer activity for the result.
         startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
     }
@@ -107,21 +99,18 @@ public class VoiceActivity extends Activity implements OnClickListener {
                 if (!textMatchList.isEmpty()) {
                     // If first Match contains the 'search' word
                     // Then start web search.
-                    if (textMatchList.get(0).contains("password")) {
+                    if (textMatchList.get(0).toLowerCase().contains("my milkshake brings all the boys to the yard")) {
                         success();
 //                            String searchQuery = textMatchList.get(0);
 //                            searchQuery = searchQuery.replace("search","");
 //                            Intent search = new Intent(Intent.ACTION_WEB_SEARCH);
 //                            search.putExtra(SearchManager.QUERY, searchQuery);
 //                            startActivity(search);
-                    } else {
-                        // populate the Matches
-                        mlvTextMatches
-                                .setAdapter(new ArrayAdapter<String>(this,
-                                        android.R.layout.simple_list_item_1,
-                                        textMatchList));
                     }
-
+                    else {
+                        // populate the Matches
+                        showToastMessage("Error. Detected: \"" +textMatchList.get(0).toLowerCase()+"\"");
+                    }
                 }
                 //Result code for various error.
             }else if(resultCode == RecognizerIntent.RESULT_AUDIO_ERROR){

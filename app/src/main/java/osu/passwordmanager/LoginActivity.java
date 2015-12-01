@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.speech.RecognizerIntent;
+import android.speech.tts.Voice;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +52,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
-    private static final int LOGIN_REQUEST_ID = 43210;
+    private static final int VOICE_REQUEST = 43210;
+    private static final int CAM_REQUEST =1319;
 
     /**
      * A dummy authentication store containing known user names and passwords.
@@ -97,13 +100,30 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+
+        Button VoiceSignInButton = (Button) findViewById(R.id.voicebutton);
+        VoiceSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                attemptVoiceLogin();
             }
         });
+        Button PictureSignInButton = (Button) findViewById(R.id.picturebutton);
+        PictureSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptPictureLogin();
+            }
+        });
+        Button TypeSignInButton = (Button) findViewById(R.id.typebutton);
+        TypeSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptTypeLogin();
+            }
+        });
+
+
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -151,6 +171,23 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         }
     }
+    private void attemptVoiceLogin() {
+        Intent i = new Intent(getBaseContext(), VoiceActivity.class);
+        //i.putExtra("PersonID", personID);
+        startActivityForResult(i, VOICE_REQUEST);
+    }
+    private void attemptPictureLogin() {
+        Intent i = new Intent(getBaseContext(), PictureActivity.class);
+        //i.putExtra("PersonID", personID);
+        startActivityForResult(i, CAM_REQUEST);
+    }
+    private void attemptTypeLogin() {
+        Intent i = new Intent(getBaseContext(), PictureActivity.class);
+        //i.putExtra("PersonID", personID);
+        startActivityForResult(i, CAM_REQUEST);
+    }
+
+
 
 
     /**
@@ -159,9 +196,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        Intent i = new Intent(getBaseContext(), VoiceActivity.class);
+        Intent i = new Intent(getBaseContext(), PictureActivity.class);
         //i.putExtra("PersonID", personID);
-        startActivityForResult(i, LOGIN_REQUEST_ID);
+        startActivityForResult(i, CAM_REQUEST);
 
 
 //        if (mAuthTask != null) {
@@ -371,11 +408,25 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == LOGIN_REQUEST_ID)
+        if (requestCode == VOICE_REQUEST)
             if(resultCode == RESULT_OK) {
                 VoiceSuccess = data.getBooleanExtra("VoiceSuccess",false);
             }
-        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAM_REQUEST)
+            if(resultCode == RESULT_OK) {
+                PictureSuccess = data.getBooleanExtra("PictureSuccess",false);
+            }
+        showToastMessage(VoiceSuccess+" "+PictureSuccess+ " "+TypeSuccess);
+
+        if((VoiceSuccess&&PictureSuccess)||(VoiceSuccess&&TypeSuccess)||(TypeSuccess&&PictureSuccess))
+        {
+            VoiceSuccess = false;
+            PictureSuccess = false;
+            TypeSuccess = false;
+            Context context = getApplicationContext();
+            Intent intent = new Intent(context, PasswordList.class);
+            startActivity(intent);
+        }
     }
     void showToastMessage(String message){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();

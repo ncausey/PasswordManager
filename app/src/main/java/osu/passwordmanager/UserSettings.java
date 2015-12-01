@@ -1,5 +1,6 @@
 package osu.passwordmanager;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.view.View;
@@ -8,7 +9,7 @@ import android.widget.Button;
 /**
  * Created by Andrew Pavlosky on 11/29/2015.
  */
-public class UserSettings extends PreferenceActivity {
+public class UserSettings extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

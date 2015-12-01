@@ -46,6 +46,7 @@
             android:label="@string/title_activity_type"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
+        <activity android:name=".UserSettings"></activity>
     </application>
 
 </manifest>
